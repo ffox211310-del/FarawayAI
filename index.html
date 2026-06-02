@@ -344,12 +344,10 @@
             aiMsgDiv.appendChild(loadingDots);
 
             try {
-                const chunks =
-    engine.chat.completions.create({
-        messages,
-        stream: true,
-    });
-
+const chunks = await engine.chat.completions.create({
+    messages,
+    stream: true,
+});
                 let fullReply = "";
                 aiMsgDiv.innerHTML = ""; // Remove loading dots
 
