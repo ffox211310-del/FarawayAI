@@ -344,10 +344,11 @@
             aiMsgDiv.appendChild(loadingDots);
 
             try {
-                const chunks = await engine.chat.completions.create({
-                    messages,
-                    stream: true,
-                });
+                const chunks =
+    engine.chat.completions.create({
+        messages,
+        stream: true,
+    });
 
                 let fullReply = "";
                 aiMsgDiv.innerHTML = ""; // Remove loading dots
@@ -361,9 +362,13 @@
 
                 messages.push({ role: "assistant", content: fullReply });
             } catch (err) {
-                aiMsgDiv.textContent = "Connection interrupted. Please retry.";
-                console.error(err);
-            }
+    console.error(err);
+
+    aiMsgDiv.textContent =
+        err?.message ||
+        String(err) ||
+        "Unknown Error";
+}
         }
 
         function appendMessage(role, text) {
