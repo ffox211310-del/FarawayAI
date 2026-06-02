@@ -31,8 +31,8 @@
             background-color: var(--bg);
             color: #fff;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            height: 100vh;
+            min-height:100vh;
+    height:100dvh;
             display: flex;
             flex-direction: column;
         }
@@ -70,6 +70,7 @@
         #chat-container {
             flex: 1;
             overflow-y: auto;
+    padding-bottom:120px;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -293,7 +294,7 @@
         // --- WebLLM Core ---
         // 高性能な Llama-3.1-8B を選択（iPhoneハイエンド向け）
         // 重すぎる場合は Qwen2.5-1.5B や Phi-3.5-mini に切り替え可能
-        const selectedModel = "Llama-3.1-8B-Instruct-q4f16_1-MLC"; 
+        const selectedModel = "Qwen2.5-3B-Instruct-q4f16_1-MLC"; 
         
         const engine = new webllm.MLCEngine();
 
@@ -306,6 +307,9 @@
                 });
 
                 await engine.reload(selectedModel);
+                await new Promise(resolve =>
+    setTimeout(resolve, 1000)
+);
                 statusEl.textContent = "System Online | High-Perf Mode";
             } catch (err) {
                 console.error(err);
@@ -384,6 +388,15 @@
                     .catch(err => console.log('Service Worker Failed', err));
             });
         }
+        /*スクロール*/
+        userInput.addEventListener('focus', () => {
+    setTimeout(() => {
+        userInput.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }, 300);
+});
     </script>
 </body>
 </html>
