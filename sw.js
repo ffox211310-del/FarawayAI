@@ -2,7 +2,7 @@ const CACHE_NAME = 'faraway-v3';
 const ASSETS = [
   './faraway.html',
   './manifest.json',
-  'https://esm.run/@mlc-ai/web-llm'
+  'https://esm.run/@mlc-ai/web-llm@0.2.79'
 ];
 
 self.addEventListener('install', (event) => {
