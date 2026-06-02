@@ -1,0 +1,21 @@
+{
+  "name": "Faraway AI",
+  "short_name": "Faraway",
+  "description": "High-performance futuristic AI companion.",
+  "start_url": "./faraway.html",
+  "display": "standalone",
+  "background_color": "#050510",
+  "theme_color": "#0a0a1a",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/00ffff/000000?text=F",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/00ffff/000000?text=Faraway",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
