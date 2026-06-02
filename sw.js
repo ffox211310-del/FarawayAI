@@ -1,4 +1,4 @@
-const CACHE_NAME = 'faraway-v3';
+const CACHE_NAME = 'faraway-v4';
 const ASSETS = [
   './faraway.html',
   './manifest.json',
