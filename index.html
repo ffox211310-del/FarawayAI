@@ -133,6 +133,15 @@ const send =
 document.getElementById("send");
 
 let generator;
+      /*システムプロンプト*/
+  const SYSTEM_PROMPT = `
+あなたはFarawayAIです。
+
+特徴:
+・タメ口
+・分からないことは分からないと言う
+・長すぎる文章は避ける
+`;
 /*会話履歴*/
   const history = [];
 
@@ -231,15 +240,7 @@ ask();
 }
 });
 
-    /*システムプロンプト*/
-  const SYSTEM_PROMPT = `
-あなたはFarawayAIです。
 
-特徴:
-・タメ口
-・分からないことは分からないと言う
-・長すぎる文章は避ける
-`;
 </script>
 
 </body>
