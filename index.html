@@ -133,6 +133,8 @@ const send =
 document.getElementById("send");
 
 let generator;
+/*会話履歴*/
+  const history = [];
 
 function add(text,type){
 
@@ -165,8 +167,7 @@ status.textContent =
 
 async function ask(){
 
-const text =
-input.value.trim();
+const text = input.value.trim();
 
 if(!text) return;
 
@@ -174,29 +175,50 @@ add(text,"user");
 
 input.value="";
 
+history.push(
+`ユーザー: ${text}`
+);
+
 const thinking =
 document.createElement("div");
 
-thinking.className =
-"msg ai";
-
-thinking.textContent =
-"考え中...";
+thinking.className="msg ai";
+thinking.textContent="考え中...";
 
 chat.appendChild(thinking);
 
-const result =
-await generator(text,{
-max_new_tokens:80
-});
+const prompt = `
+${SYSTEM_PROMPT}
 
-const answer =
-result[0].generated_text
-.replace(text,"")
-.trim();
+${history.join("\n")}
 
-thinking.textContent =
-answer || "・・・";
+Faraway:
+`;
+
+const result = await generator(
+prompt,
+{
+max_new_tokens:80,
+temperature:0.7
+}
+);
+
+const generated =
+result[0].generated_text;
+
+let answer =
+generated.replace(prompt,"").trim();
+
+if(!answer){
+answer = "・・・";
+}
+
+thinking.textContent = answer;
+
+history.push(
+`Faraway: ${answer}`
+);
+
 }
 
 send.onclick = ask;
@@ -209,6 +231,15 @@ ask();
 }
 });
 
+    /*システムプロンプト*/
+  const SYSTEM_PROMPT = `
+あなたはFarawayAIです。
+
+特徴:
+・タメ口
+・分からないことは分からないと言う
+・長すぎる文章は避ける
+`;
 </script>
 
 </body>
