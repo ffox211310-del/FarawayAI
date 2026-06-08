@@ -143,66 +143,72 @@
     }
 
     async function sendMessage() {
-      const prompt = promptInput.value.trim();
-      if (!prompt || !generator) return;
+  const prompt = promptInput.value.trim();
+  if (!prompt || !generator) return;
 
-      addMessage('あなた', prompt);
-      promptInput.value = '';
-      sendBtn.disabled = true;
-      promptInput.disabled = true;
-      addThinkingMessage();
-      hideError();
+  addMessage('あなた', prompt);
+  promptInput.value = '';
+  sendBtn.disabled = true;
+  promptInput.disabled = true;
+  addThinkingMessage();
+  hideError();
 
-      try {
-        const result = await generator(prompt, {
-          max_new_tokens: 256,
-          temperature: 0.6,
-          do_sample: true,
-        });
+  try {
+    // ★ 修正点1：入力を配列で渡す
+    const messages = [{ role: "user", content: prompt }];
+    const result = await generator(messages, {
+      max_new_tokens: 256,
+      temperature: 0.6,
+      do_sample: true,
+    });
 
-        console.log('生成結果:', result); // デバッグ用
+    console.log('生成結果:', result);
 
-        removeThinkingMessage();
+    removeThinkingMessage();
 
-        // 結果の型チェックと安全な抽出
-        let reply = '';
-        if (Array.isArray(result) && result.length > 0) {
-          const generated = result[0].generated_text;
-          if (typeof generated === 'string') {
-            reply = generated.replace(prompt, '').trim();
-          } else if (generated && typeof generated === 'object') {
-            // オブジェクトなら中身を文字列化
-            reply = JSON.stringify(generated);
-          } else {
-            reply = String(generated);
-          }
-        } else if (result && typeof result === 'object' && result.generated_text) {
-          reply = result.generated_text.replace(prompt, '').trim();
-        } else {
-          throw new Error('予期しない出力形式: ' + JSON.stringify(result));
-        }
-
-        if (!reply) reply = '(応答が空でした)';
-        addMessage('🤖', reply);
-      } catch (err) {
-        removeThinkingMessage();
-        console.error(err);
-        let msg = 'テキスト生成中にエラーが発生しました。\n';
-        if (err.message.includes('split is not a function')) {
-          msg += 'モデルが期待する入力形式が異なる可能性があります。チャットテンプレートが必要なモデルか確認してください。';
-        } else if (err.message.includes('memory') || err.message.includes('out of memory')) {
-          msg += 'メモリが不足しています。他のタブを閉じて再試行してください。';
-        } else {
-          msg += err.message;
-        }
-        showError(msg);
-        addMessage('🤖', '⚠️ エラー: ' + msg);
-      } finally {
-        sendBtn.disabled = false;
-        promptInput.disabled = false;
-        promptInput.focus();
+    // ★ 修正点2：出力から最後のメッセージを取り出す
+    let reply = '';
+    if (Array.isArray(result) && result.length > 0) {
+      // 通常、生成結果は会話全体の配列で、最後に assistant が追加される
+      const last = result[result.length - 1];
+      if (typeof last === 'string') {
+        reply = last;
+      } else if (last && typeof last === 'object') {
+        // content プロパティがあればそれを、なければ generated_text を参照
+        reply = last.content || last.generated_text || JSON.stringify(last);
+      } else {
+        reply = String(last);
       }
+    } else if (result && typeof result === 'object' && result.generated_text) {
+      // もし単一オブジェクトが返った場合
+      reply = result.generated_text;
+    } else {
+      throw new Error('予期しない出力形式: ' + JSON.stringify(result));
     }
+
+    reply = reply.trim();
+    if (!reply) reply = '(応答が空でした)';
+    addMessage('🤖', reply);
+
+  } catch (err) {
+    removeThinkingMessage();
+    console.error(err);
+    let msg = 'テキスト生成中にエラーが発生しました。\n';
+    if (err.message.includes('split is not a function')) {
+      msg += 'モデルへの入力形式が正しくありません。会話形式の配列を渡す必要があります。';
+    } else if (err.message.includes('memory')) {
+      msg += 'メモリが不足しています。他のタブを閉じて再試行してください。';
+    } else {
+      msg += err.message;
+    }
+    showError(msg);
+    addMessage('🤖', '⚠️ エラー: ' + msg);
+  } finally {
+    sendBtn.disabled = false;
+    promptInput.disabled = false;
+    promptInput.focus();
+  }
+}
 
     sendBtn.addEventListener('click', sendMessage);
     promptInput.addEventListener('keydown', (e) => {
