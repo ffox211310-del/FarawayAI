@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DeepSeek オフライン Web チャット（改改）</title>
+  <title>DeepSeek → TinyLlama 安定版 オフラインチャット</title>
   <style>
     body { font-family: sans-serif; max-width: 700px; margin: 2em auto; padding: 0 1em; }
     #status, #error { margin: 1em 0; padding: 0.8em; border-radius: 6px; }
@@ -22,7 +22,7 @@
   </style>
 </head>
 <body>
-  <h1>🧠 DeepSeek オフライン チャット改</h1>
+  <h1>🤖 TinyLlama 安定版 オフラインチャット</h1>
   <div id="status">モデル未ロード</div>
   <div id="error"></div>
   <div id="progress-container">
@@ -37,8 +37,8 @@
   <script type="module">
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-    // 使用モデル
-    const MODEL_NAME = 'onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX';
+    // ★ 動作確認済みの安定モデルに変更 (約700MB、一度ダウンロードすればオフラインOK)
+    const MODEL_NAME = 'Xenova/TinyLlama-1.1B-Chat-v1.0';
 
     // DOM要素
     const statusDiv = document.getElementById('status');
@@ -76,7 +76,7 @@
       if (loading) return;
       loading = true;
       hideError();
-      setStatus('モデルをダウンロード中... (初回は時間がかかります)', 0);
+      setStatus('モデルをダウンロード中... (初回のみ、以降はオフライン可)', 0);
       sendBtn.disabled = true;
       promptInput.disabled = true;
 
@@ -88,28 +88,24 @@
             progress_callback: (progress) => {
               if (progress.status === 'progress') {
                 const percent = (progress.loaded / progress.total) * 100;
-                setStatus(`モデルダウンロード中... ${progress.file}`, percent);
+                setStatus(`ダウンロード中... ${progress.file}`, percent);
               } else if (progress.status === 'done') {
                 setStatus('モデルファイルを処理中...');
               }
             }
           }
         );
-        setStatus('✅ モデルの準備完了！ チャットを始めてください');
+        setStatus('✅ 準備完了！ オフラインでチャットできます');
         promptInput.disabled = false;
         sendBtn.disabled = false;
-        addMessage('🤖', 'こんにちは！オフラインでも使える DeepSeek です。');
+        addMessage('🤖', 'こんにちは！オフラインでも動作する TinyLlama です。');
       } catch (err) {
         console.error(err);
         let msg = 'モデルの読み込みに失敗しました。\n';
         if (err.message.includes('Failed to fetch')) {
-          msg += 'インターネット接続を確認してください。初回ダウンロードが必要です。';
-        } else if (err.message.includes('local model')) {
-          msg += 'ローカルモデルが見つかりません。パスを確認してください。';
+          msg += 'インターネットに接続して初回ダウンロードを完了させてください。';
         } else if (err.message.includes('storage') || err.message.includes('quota')) {
-          msg += 'ブラウザのストレージ容量が不足しています。キャッシュをクリアするか、より小さなモデルをお試しください。';
-        } else if (err.message.includes('memory') || err.message.includes('out of memory')) {
-          msg += 'メモリ不足です。他のタブを閉じるか、デバイスの空きメモリを増やしてください。';
+          msg += 'ブラウザのストレージ容量が不足しています。キャッシュをクリアしてください。';
         } else {
           msg += err.message;
         }
@@ -143,72 +139,58 @@
     }
 
     async function sendMessage() {
-  const prompt = promptInput.value.trim();
-  if (!prompt || !generator) return;
+      const prompt = promptInput.value.trim();
+      if (!prompt || !generator) return;
 
-  addMessage('あなた', prompt);
-  promptInput.value = '';
-  sendBtn.disabled = true;
-  promptInput.disabled = true;
-  addThinkingMessage();
-  hideError();
+      addMessage('あなた', prompt);
+      promptInput.value = '';
+      sendBtn.disabled = true;
+      promptInput.disabled = true;
+      addThinkingMessage();
+      hideError();
 
-  try {
-    // ★ 修正点1：入力を配列で渡す
-    const messages = [{ role: "user", content: prompt }];
-    const result = await generator(messages, {
-      max_new_tokens: 256,
-      temperature: 0.6,
-      do_sample: true,
-    });
+      try {
+        // TinyLlama 用の会話形式
+        const messages = [
+          { role: "user", content: prompt }
+        ];
+        const result = await generator(messages, {
+          max_new_tokens: 256,
+          temperature: 0.7,
+          do_sample: true,
+        });
 
-    console.log('生成結果:', result);
+        console.log('生成結果:', result);
+        removeThinkingMessage();
 
-    removeThinkingMessage();
+        let reply = '';
+        if (Array.isArray(result) && result.length > 0) {
+          const last = result[result.length - 1];
+          reply = (last && (last.content || last.generated_text)) || String(last);
+        } else if (result && typeof result === 'object') {
+          reply = result.generated_text || result.content || JSON.stringify(result);
+        }
+        reply = reply.trim();
+        if (!reply) reply = '(応答が空でした)';
+        addMessage('🤖', reply);
 
-    // ★ 修正点2：出力から最後のメッセージを取り出す
-    let reply = '';
-    if (Array.isArray(result) && result.length > 0) {
-      // 通常、生成結果は会話全体の配列で、最後に assistant が追加される
-      const last = result[result.length - 1];
-      if (typeof last === 'string') {
-        reply = last;
-      } else if (last && typeof last === 'object') {
-        // content プロパティがあればそれを、なければ generated_text を参照
-        reply = last.content || last.generated_text || JSON.stringify(last);
-      } else {
-        reply = String(last);
+      } catch (err) {
+        removeThinkingMessage();
+        console.error(err);
+        let msg = '生成中にエラーが発生しました。\n';
+        if (err.message.includes('memory')) {
+          msg += 'メモリが不足しています。他のタブを閉じて再試行してください。';
+        } else {
+          msg += err.message;
+        }
+        showError(msg);
+        addMessage('🤖', '⚠️ エラー: ' + msg);
+      } finally {
+        sendBtn.disabled = false;
+        promptInput.disabled = false;
+        promptInput.focus();
       }
-    } else if (result && typeof result === 'object' && result.generated_text) {
-      // もし単一オブジェクトが返った場合
-      reply = result.generated_text;
-    } else {
-      throw new Error('予期しない出力形式: ' + JSON.stringify(result));
     }
-
-    reply = reply.trim();
-    if (!reply) reply = '(応答が空でした)';
-    addMessage('🤖', reply);
-
-  } catch (err) {
-    removeThinkingMessage();
-    console.error(err);
-    let msg = 'テキスト生成中にエラーが発生しました。\n';
-    if (err.message.includes('split is not a function')) {
-      msg += 'モデルへの入力形式が正しくありません。会話形式の配列を渡す必要があります。';
-    } else if (err.message.includes('memory')) {
-      msg += 'メモリが不足しています。他のタブを閉じて再試行してください。';
-    } else {
-      msg += err.message;
-    }
-    showError(msg);
-    addMessage('🤖', '⚠️ エラー: ' + msg);
-  } finally {
-    sendBtn.disabled = false;
-    promptInput.disabled = false;
-    promptInput.focus();
-  }
-}
 
     sendBtn.addEventListener('click', sendMessage);
     promptInput.addEventListener('keydown', (e) => {
