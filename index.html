@@ -2,61 +2,121 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>GPT-2 動作確認</title>
+  <title>Llama 3.2 1B オフラインチャット</title>
   <style>
     body { font-family: sans-serif; max-width: 700px; margin: 2em auto; padding: 0 1em; }
-    #status, #error { padding: 0.8em; border-radius: 6px; margin: 1em 0; }
+    #status, #error { margin: 1em 0; padding: 0.8em; border-radius: 6px; }
     #status { background: #e0f0ff; }
-    #error { background: #ffe0e0; color: #b00020; display: none; }
+    #error { background: #ffe0e0; color: #b00020; display: none; white-space: pre-wrap; }
+    #progress-container { width: 100%; background: #ddd; border-radius: 10px; margin: 1em 0; display: none; }
+    #progress-bar { height: 20px; width: 0%; background: #4caf50; border-radius: 10px; text-align: center; color: white; line-height: 20px; }
     #chat { border: 1px solid #ccc; height: 300px; overflow-y: auto; padding: 0.8em; margin-bottom: 1em; background: #fafafa; }
-    .user { color: #1a73e8; } .bot { color: #202124; }
+    .message { margin-bottom: 0.6em; }
+    .user { color: #1a73e8; }
+    .bot { color: #202124; }
+    .bot.thinking { color: #888; font-style: italic; }
     #input-area { display: flex; gap: 0.5em; }
-    #prompt { flex: 1; padding: 0.5em; }
-    button { padding: 0.5em 1.2em; cursor: pointer; }
+    #prompt { flex: 1; padding: 0.5em; font-size: 1em; }
+    button { padding: 0.5em 1.2em; font-size: 1em; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>🔧 GPT-2 動作テスト</h1>
+  <h1>🦙 Llama 3.2 1B オフラインチャット</h1>
   <div id="status">モデル未ロード</div>
   <div id="error"></div>
+  <div id="progress-container">
+    <div id="progress-bar">0%</div>
+  </div>
   <div id="chat"></div>
   <div id="input-area">
-    <input type="text" id="prompt" placeholder="英語で入力してください (Hello など)" disabled />
+    <input type="text" id="prompt" placeholder="メッセージを入力（日本語OK）" disabled />
     <button id="sendBtn" disabled>送信</button>
   </div>
 
   <script type="module">
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
-    const MODEL_NAME = 'Xenova/gpt2';  // 絶対に動く
+    // ★ Llama 3.2 1B Instruct（ブラウザ動作実績あり、日本語対応）
+    const MODEL_NAME = 'Xenova/Llama-3.2-1B-Instruct';
 
     const statusDiv = document.getElementById('status');
     const errorDiv = document.getElementById('error');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
     const chatDiv = document.getElementById('chat');
     const promptInput = document.getElementById('prompt');
     const sendBtn = document.getElementById('sendBtn');
 
     let generator = null;
 
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+    }
+    function hideError() { errorDiv.style.display = 'none'; }
+
+    function setStatus(text, progress = null) {
+      statusDiv.textContent = text;
+      if (progress !== null) {
+        progressContainer.style.display = 'block';
+        const pct = Math.round(progress);
+        progressBar.style.width = pct + '%';
+        progressBar.textContent = pct + '%';
+      } else {
+        progressContainer.style.display = 'none';
+      }
+    }
+
     async function loadModel() {
-      statusDiv.textContent = 'モデルをダウンロード中... (初回のみ)';
+      hideError();
+      setStatus('モデルをダウンロード中... (初回のみ、以降はオフライン可)', 0);
+      promptInput.disabled = true;
+      sendBtn.disabled = true;
       try {
-        generator = await pipeline('text-generation', MODEL_NAME);
-        statusDiv.textContent = '✅ 準備完了！ 英語で話しかけてください';
+        generator = await pipeline(
+          'text-generation',
+          MODEL_NAME,
+          {
+            progress_callback: (info) => {
+              if (info.status === 'progress') {
+                const pct = (info.loaded / info.total) * 100;
+                setStatus(`ダウンロード中... ${info.file}`, pct);
+              } else if (info.status === 'done') {
+                setStatus('処理中...');
+              }
+            }
+          }
+        );
+        setStatus('✅ 準備完了！ 日本語でチャットできます');
         promptInput.disabled = false;
         sendBtn.disabled = false;
+        addMessage('🤖', 'こんにちは！オフラインで動作する Llama 3.2 です。');
       } catch (err) {
-        errorDiv.style.display = 'block';
-        errorDiv.textContent = 'エラー: ' + err.message;
+        console.error(err);
+        let msg = '読み込み失敗: ' + err.message;
+        showError(msg);
+        setStatus('❌ 読み込み失敗');
       }
     }
 
     function addMessage(role, text) {
       const div = document.createElement('div');
-      div.className = role === 'あなた' ? 'user' : 'bot';
+      div.className = 'message ' + (role === 'あなた' ? 'user' : 'bot');
       div.textContent = (role === 'あなた' ? '🧑 ' : '🤖 ') + text;
       chatDiv.appendChild(div);
       chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    function addThinking() {
+      const div = document.createElement('div');
+      div.className = 'message bot thinking';
+      div.id = 'thinking';
+      div.textContent = '🤖 考え中...';
+      chatDiv.appendChild(div);
+    }
+    function removeThinking() {
+      const el = document.getElementById('thinking');
+      if (el) el.remove();
     }
 
     async function sendMessage() {
@@ -65,22 +125,48 @@
       addMessage('あなた', prompt);
       promptInput.value = '';
       sendBtn.disabled = true;
+      promptInput.disabled = true;
+      addThinking();
+      hideError();
+
       try {
-        const result = await generator(prompt, { max_new_tokens: 50, temperature: 0.7 });
-        const reply = result[0].generated_text.replace(prompt, '').trim() || '(空)';
+        // チャットテンプレートが自動適用される
+        const messages = [{ role: "user", content: prompt }];
+        const result = await generator(messages, {
+          max_new_tokens: 256,
+          temperature: 0.7,
+          do_sample: true,
+        });
+        removeThinking();
+
+        let reply = '';
+        if (Array.isArray(result) && result.length > 0) {
+          const last = result[result.length - 1];
+          reply = (last && (last.content || last.generated_text)) || String(last);
+        } else if (result && typeof result === 'object') {
+          reply = result.generated_text || result.content || JSON.stringify(result);
+        }
+        reply = reply.trim();
+        if (!reply) reply = '(応答が空でした)';
         addMessage('🤖', reply);
       } catch (err) {
-        errorDiv.style.display = 'block';
-        errorDiv.textContent = '生成エラー: ' + err.message;
+        removeThinking();
+        console.error(err);
+        showError('生成エラー: ' + err.message);
+        addMessage('🤖', '⚠️ エラーが発生しました');
       } finally {
         sendBtn.disabled = false;
+        promptInput.disabled = false;
         promptInput.focus();
       }
     }
 
     sendBtn.addEventListener('click', sendMessage);
     promptInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
     });
 
     loadModel();
