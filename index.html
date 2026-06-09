@@ -41,8 +41,11 @@ button{
 
 <script type="module">
 
-import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+    import * as webllm from "https://esm.run/@mlc-ai/web-llm";
 
+    console.log("webllm=", webllm);
+console.log("keys=", Object.keys(webllm));
+    
 const status = document.getElementById("status");
 const chat = document.getElementById("chat");
 
