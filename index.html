@@ -2,206 +2,198 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Faraway</title>
+<title>Faraway AI</title>
 
 <style>
-
-:root{
---bg:#020611;
---panel:#081321;
---blue:#4da3ff;
---cyan:#78e7ff;
---text:#eef9ff;
-}
-
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
 }
 
 body{
 height:100vh;
 overflow:hidden;
-font-family:sans-serif;
-color:var(--text);
-
-/* 宇宙背景 */
 background:
-radial-gradient(circle at top,
-rgba(77,163,255,.12),
-transparent 35%),
-
-linear-gradient(
-180deg,
-#081321 0%,
-#050814 50%,
-#000 100%
-);
-
+radial-gradient(circle at top,#10213d 0%,#050914 40%,#000 100%);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
 position:relative;
 }
 
 /* 星 */
-.stars{
-position:fixed;
-inset:0;
-pointer-events:none;
-}
-
-.stars::before,
-.stars::after{
-content:"";
+.star{
 position:absolute;
-inset:0;
-background-image:
-
-radial-gradient(circle,#fff 1px,transparent 1px),
-radial-gradient(circle,#78e7ff 1px,transparent 1px),
-radial-gradient(circle,#4da3ff 1px,transparent 1px);
-
-background-size:
-180px 180px,
-250px 250px,
-320px 320px;
-
-background-position:
-0 0,
-70px 120px,
-140px 80px;
-
-opacity:.35;
+width:2px;
+height:2px;
+background:white;
+border-radius:50%;
+opacity:.5;
+animation:twinkle 4s infinite ease-in-out;
 }
 
-.stars::after{
-filter:blur(.8px);
-opacity:.15;
+@keyframes twinkle{
+0%,100%{
+opacity:.2;
+}
+50%{
+opacity:.9;
+}
 }
 
-/* ヘッダー */
-.header{
-padding:24px;
-border-bottom:1px solid rgba(255,255,255,.08);
-backdrop-filter:blur(8px);
+.container{
+width:90%;
+max-width:500px;
+text-align:center;
+z-index:2;
 }
 
-/* FARAWAYロゴ */
 .logo{
-
-font-size:38px;
+font-size:4rem;
 font-weight:900;
-letter-spacing:4px;
+letter-spacing:5px;
+
+background:linear-gradient(
+90deg,
+#7dd3ff,
+#4da3ff,
+#8ae7ff,
+#7dd3ff
+);
+
+background-size:300%;
+
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+
+animation:shine 8s linear infinite;
+}
+
+@keyframes shine{
+0%{
+background-position:0%;
+}
+100%{
+background-position:300%;
+}
+}
+
+.subtitle{
+margin-top:15px;
+font-size:1rem;
+color:#9ec9ff;
+line-height:1.8;
+}
+
+.message{
+margin-top:40px;
+padding:20px;
+background:rgba(20,40,80,.25);
+backdrop-filter:blur(10px);
+border:1px solid rgba(100,180,255,.15);
+border-radius:18px;
+}
+
+.status{
+font-size:1.1rem;
+color:#8fd8ff;
+margin-bottom:12px;
+}
+
+.desc{
+font-size:.95rem;
+color:#d6e8ff;
+line-height:1.7;
+}
+
+.button{
+margin-top:35px;
+padding:15px 35px;
+border:none;
+border-radius:999px;
 
 background:
 linear-gradient(
 90deg,
-#4da3ff,
-#78e7ff,
-#dff7ff
+#2c6fff,
+#54d7ff
 );
 
--webkit-background-clip:text;
-background-clip:text;
-
-color:transparent;
-
-text-shadow:
-0 0 15px rgba(77,163,255,.3);
-
-}
-
-/* バージョン */
-.version{
-margin-top:6px;
-font-size:13px;
-color:#8ca9c9;
-letter-spacing:2px;
-}
-
-.status{
-margin-top:12px;
-display:flex;
-align-items:center;
-gap:8px;
-font-size:13px;
-color:var(--cyan);
-}
-
-.dot{
-width:8px;
-height:8px;
-border-radius:50%;
-background:var(--cyan);
+color:white;
+font-weight:700;
+font-size:1rem;
+cursor:pointer;
 
 box-shadow:
-0 0 10px var(--cyan),
-0 0 20px var(--cyan);
-
-animation:pulse 2s infinite;
+0 0 25px rgba(80,180,255,.3);
 }
 
-@keyframes pulse{
-50%{
-opacity:.3;
+.button:hover{
+transform:translateY(-2px);
 }
-}
-
-.chat{
-padding:20px;
-}
-
-.msg{
-padding:14px 18px;
-margin-bottom:14px;
-border-radius:18px;
-
-background:
-rgba(255,255,255,.04);
-
-border:
-1px solid rgba(77,163,255,.15);
-
-backdrop-filter:blur(10px);
-
-max-width:80%;
-}
-
 </style>
 </head>
 <body>
 
-<div class="stars"></div>
+<div id="stars"></div>
 
-<div class="header">
+<div class="container">
 
-<div class="logo">
-FARAWAY
+<div class="logo">FARAWAY</div>
+
+<div class="subtitle">
+たとえ砂漠の真ん中でも。<br>
+宇宙の果てでも。<br>
+スマホが動く限り、あなたのそばに。
 </div>
 
-<div class="version">
-PHENEX v0.1
-</div>
+<div class="message">
 
 <div class="status">
-<div class="dot"></div>
-ONLINE
+📡 Farawayに連絡中...
+</div>
+
+<div class="desc">
+遠い場所にいるAIへ接続しています。<br>
+準備が整うと、あなたの端末へやってきます。
 </div>
 
 </div>
 
-<div class="chat">
-
-<div class="msg">
-ようこそ。Farawayへ接続しました。
-</div>
-
-<div class="msg">
-ここにAIの返答が表示されます。
-</div>
+<button class="button">
+迎え入れる
+</button>
 
 </div>
+
+<script>
+
+const stars = document.getElementById("stars");
+
+for(let i=0;i<70;i++){
+
+const star=document.createElement("div");
+
+star.className="star";
+
+star.style.left=Math.random()*100+"vw";
+star.style.top=Math.random()*100+"vh";
+
+star.style.animationDelay=
+(Math.random()*4)+"s";
+
+star.style.opacity=
+Math.random();
+
+stars.appendChild(star);
+}
+
+</script>
 
 </body>
 </html>
