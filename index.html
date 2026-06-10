@@ -2,198 +2,359 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Faraway AI</title>
 
 <style>
+
+:root{
+--bg:#020611;
+--panel:#081321;
+--panel2:#10253f;
+
+--blue:#4da3ff;
+--cyan:#78e7ff;
+
+--text:#eef9ff;
+--sub:#89a8c9;
+}
+
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:'Segoe UI',sans-serif;
+font-family:"Segoe UI",sans-serif;
 }
 
 body{
 height:100vh;
 overflow:hidden;
+
 background:
-radial-gradient(circle at top,#10213d 0%,#050914 40%,#000 100%);
+radial-gradient(
+circle at top,
+rgba(77,163,255,.12),
+transparent 35%),
+
+linear-gradient(
+180deg,
+#081321 0%,
+#04070f 55%,
+#000 100%
+);
+
 color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-position:relative;
 }
 
 /* 星 */
-.star{
+
+.stars{
+position:fixed;
+inset:0;
+pointer-events:none;
+}
+
+.stars::before{
+content:"";
 position:absolute;
-width:2px;
-height:2px;
-background:white;
-border-radius:50%;
-opacity:.5;
-animation:twinkle 4s infinite ease-in-out;
+inset:0;
+
+background-image:
+radial-gradient(circle,#fff 1px,transparent 1px),
+radial-gradient(circle,#78e7ff 1px,transparent 1px);
+
+background-size:
+180px 180px,
+260px 260px;
+
+background-position:
+0 0,
+80px 140px;
+
+opacity:.3;
 }
 
-@keyframes twinkle{
-0%,100%{
-opacity:.2;
-}
-50%{
-opacity:.9;
-}
+/* アプリ全体 */
+
+.app{
+height:100vh;
+display:flex;
+flex-direction:column;
 }
 
-.container{
-width:90%;
-max-width:500px;
-text-align:center;
-z-index:2;
+/* ヘッダー */
+
+.header{
+
+padding:18px;
+
+border-bottom:
+1px solid rgba(255,255,255,.08);
+
+backdrop-filter:blur(8px);
 }
 
 .logo{
-font-size:4rem;
+
+font-size:30px;
 font-weight:900;
-letter-spacing:5px;
-
-background:linear-gradient(
-90deg,
-#7dd3ff,
-#4da3ff,
-#8ae7ff,
-#7dd3ff
-);
-
-background-size:300%;
-
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-
-animation:shine 8s linear infinite;
-}
-
-@keyframes shine{
-0%{
-background-position:0%;
-}
-100%{
-background-position:300%;
-}
-}
-
-.subtitle{
-margin-top:15px;
-font-size:1rem;
-color:#9ec9ff;
-line-height:1.8;
-}
-
-.message{
-margin-top:40px;
-padding:20px;
-background:rgba(20,40,80,.25);
-backdrop-filter:blur(10px);
-border:1px solid rgba(100,180,255,.15);
-border-radius:18px;
-}
-
-.status{
-font-size:1.1rem;
-color:#8fd8ff;
-margin-bottom:12px;
-}
-
-.desc{
-font-size:.95rem;
-color:#d6e8ff;
-line-height:1.7;
-}
-
-.button{
-margin-top:35px;
-padding:15px 35px;
-border:none;
-border-radius:999px;
+letter-spacing:4px;
 
 background:
 linear-gradient(
 90deg,
-#2c6fff,
-#54d7ff
+#4da3ff,
+#78e7ff,
+#ffffff
 );
 
-color:white;
-font-weight:700;
-font-size:1rem;
-cursor:pointer;
+-webkit-background-clip:text;
+background-clip:text;
+color:transparent;
+}
+
+.ship-status{
+
+margin-top:8px;
+
+font-size:13px;
+color:var(--cyan);
+
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.dot{
+
+width:8px;
+height:8px;
+
+border-radius:50%;
+
+background:var(--cyan);
 
 box-shadow:
-0 0 25px rgba(80,180,255,.3);
+0 0 8px var(--cyan),
+0 0 18px var(--cyan);
+
+animation:pulse 2s infinite;
 }
 
-.button:hover{
-transform:translateY(-2px);
+@keyframes pulse{
+
+50%{
+opacity:.3;
 }
+
+}
+
+/* チャット */
+
+.chat{
+
+flex:1;
+
+overflow-y:auto;
+
+padding:20px;
+
+display:flex;
+flex-direction:column;
+
+gap:14px;
+}
+
+.system{
+
+text-align:center;
+
+font-size:12px;
+
+color:var(--sub);
+
+margin:6px 0 14px;
+}
+
+.msg{
+
+max-width:85%;
+
+padding:14px 16px;
+
+line-height:1.6;
+
+border-radius:18px;
+
+word-break:break-word;
+}
+
+.ai{
+
+align-self:flex-start;
+
+background:
+rgba(255,255,255,.05);
+
+border:
+1px solid rgba(77,163,255,.15);
+
+backdrop-filter:blur(10px);
+}
+
+.user{
+
+align-self:flex-end;
+
+background:
+linear-gradient(
+135deg,
+rgba(77,163,255,.65),
+rgba(77,163,255,.25)
+);
+}
+
+/* 入力欄 */
+
+.input-area{
+
+padding:14px;
+
+display:flex;
+
+gap:10px;
+
+border-top:
+1px solid rgba(255,255,255,.08);
+
+background:
+rgba(0,0,0,.15);
+
+backdrop-filter:blur(12px);
+}
+
+.input-box{
+
+flex:1;
+
+padding:14px;
+
+border:none;
+outline:none;
+
+border-radius:14px;
+
+background:var(--panel);
+
+color:white;
+
+font-size:15px;
+}
+
+.send-btn{
+
+width:58px;
+
+border:none;
+
+border-radius:14px;
+
+cursor:pointer;
+
+font-size:18px;
+
+color:white;
+
+background:
+linear-gradient(
+135deg,
+var(--blue),
+var(--cyan)
+);
+
+box-shadow:
+0 0 15px rgba(77,163,255,.25);
+}
+
+.send-btn:active{
+transform:scale(.96);
+}
+
 </style>
 </head>
 <body>
 
-<div id="stars"></div>
+<div class="stars"></div>
 
-<div class="container">
+<div class="app">
 
-<div class="logo">FARAWAY</div>
+<div class="header">
 
-<div class="subtitle">
-たとえ砂漠の真ん中でも。<br>
-宇宙の果てでも。<br>
-スマホが動く限り、あなたのそばに。
+<div class="logo">
+FARAWAY
 </div>
 
-<div class="message">
+<div class="ship-status">
 
-<div class="status">
-📡 Farawayに連絡中...
-</div>
+<div class="dot"></div>
 
-<div class="desc">
-遠い場所にいるAIへ接続しています。<br>
-準備が整うと、あなたの端末へやってきます。
+通信船停泊中
+
 </div>
 
 </div>
 
-<button class="button">
-迎え入れる
+<div class="chat">
+
+<div class="system">
+通信船が停泊しています
+</div>
+
+<div class="msg ai">
+こんにちは。
+
+Farawayです。
+
+遠くから来ました。
+</div>
+
+<div class="msg ai">
+たとえ砂漠の真ん中でも、
+宇宙の果てでも、
+
+スマホが動く限り、
+あなたのそばにいます。
+</div>
+
+<div class="msg user">
+よろしく！
+</div>
+
+<div class="msg ai">
+こちらこそ。
+
+準備ができたら、
+いつでも話しかけてください。
+</div>
+
+</div>
+
+<div class="input-area">
+
+<input
+class="input-box"
+type="text"
+placeholder="Farawayへメッセージを送信..."
+>
+
+<button class="send-btn">
+➤
 </button>
 
 </div>
 
-<script>
-
-const stars = document.getElementById("stars");
-
-for(let i=0;i<70;i++){
-
-const star=document.createElement("div");
-
-star.className="star";
-
-star.style.left=Math.random()*100+"vw";
-star.style.top=Math.random()*100+"vh";
-
-star.style.animationDelay=
-(Math.random()*4)+"s";
-
-star.style.opacity=
-Math.random();
-
-stars.appendChild(star);
-}
-
-</script>
+</div>
 
 </body>
 </html>
