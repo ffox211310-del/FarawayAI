@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Faraway AI</title>
+<title>Faraway</title>
 
 <style>
 
@@ -17,7 +17,7 @@
 --cyan:#78e7ff;
 
 --text:#eef9ff;
---sub:#89a8c9;
+--sub:#86a4c7;
 }
 
 *{
@@ -28,15 +28,13 @@ font-family:"Segoe UI",sans-serif;
 }
 
 body{
-height:100vh;
-overflow:hidden;
 
 background:
 radial-gradient(
 circle at top,
 rgba(77,163,255,.12),
-transparent 35%),
-
+transparent 35%
+),
 linear-gradient(
 180deg,
 #081321 0%,
@@ -45,18 +43,28 @@ linear-gradient(
 );
 
 color:white;
+overflow:hidden;
 }
 
-/* 星 */
+.app{
+height:100dvh;
+display:flex;
+flex-direction:column;
+}
+
+/* 星空 */
 
 .stars{
 position:fixed;
 inset:0;
 pointer-events:none;
+opacity:.35;
 }
 
 .stars::before{
+
 content:"";
+
 position:absolute;
 inset:0;
 
@@ -66,40 +74,30 @@ radial-gradient(circle,#78e7ff 1px,transparent 1px);
 
 background-size:
 180px 180px,
-260px 260px;
+250px 250px;
 
 background-position:
 0 0,
-80px 140px;
-
-opacity:.3;
-}
-
-/* アプリ全体 */
-
-.app{
-height:100vh;
-display:flex;
-flex-direction:column;
+100px 120px;
 }
 
 /* ヘッダー */
 
 .header{
 
-padding:18px;
+padding:18px 20px;
 
 border-bottom:
-1px solid rgba(255,255,255,.08);
+1px solid rgba(255,255,255,.05);
 
 backdrop-filter:blur(8px);
 }
 
 .logo{
 
-font-size:30px;
+font-size:32px;
 font-weight:900;
-letter-spacing:4px;
+letter-spacing:5px;
 
 background:
 linear-gradient(
@@ -114,40 +112,13 @@ background-clip:text;
 color:transparent;
 }
 
-.ship-status{
+.subtitle{
 
-margin-top:8px;
+margin-top:6px;
 
 font-size:13px;
+
 color:var(--cyan);
-
-display:flex;
-align-items:center;
-gap:8px;
-}
-
-.dot{
-
-width:8px;
-height:8px;
-
-border-radius:50%;
-
-background:var(--cyan);
-
-box-shadow:
-0 0 8px var(--cyan),
-0 0 18px var(--cyan);
-
-animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-
-50%{
-opacity:.3;
-}
-
 }
 
 /* チャット */
@@ -174,7 +145,7 @@ font-size:12px;
 
 color:var(--sub);
 
-margin:6px 0 14px;
+margin-bottom:10px;
 }
 
 .msg{
@@ -183,9 +154,9 @@ max-width:85%;
 
 padding:14px 16px;
 
-line-height:1.6;
-
 border-radius:18px;
+
+line-height:1.7;
 
 word-break:break-word;
 }
@@ -198,9 +169,9 @@ background:
 rgba(255,255,255,.05);
 
 border:
-1px solid rgba(77,163,255,.15);
+1px solid rgba(77,163,255,.12);
 
-backdrop-filter:blur(10px);
+backdrop-filter:blur(8px);
 }
 
 .user{
@@ -215,54 +186,79 @@ rgba(77,163,255,.25)
 );
 }
 
-/* 入力欄 */
+.sender{
+
+font-size:11px;
+
+margin-bottom:6px;
+
+color:var(--cyan);
+
+letter-spacing:1px;
+}
+
+/* 入力エリア */
+
+.input-wrap{
+
+padding:
+0 12px
+calc(env(safe-area-inset-bottom) + 12px)
+12px;
+}
 
 .input-area{
 
-padding:14px;
-
 display:flex;
-
 gap:10px;
 
-border-top:
-1px solid rgba(255,255,255,.08);
+padding:10px;
+
+border-radius:22px;
 
 background:
-rgba(0,0,0,.15);
+rgba(8,19,33,.95);
+
+border:
+1px solid rgba(77,163,255,.15);
 
 backdrop-filter:blur(12px);
+
+box-shadow:
+0 0 25px rgba(77,163,255,.08);
 }
 
 .input-box{
 
 flex:1;
 
-padding:14px;
-
+background:none;
 border:none;
 outline:none;
-
-border-radius:14px;
-
-background:var(--panel);
 
 color:white;
 
 font-size:15px;
+
+padding:12px;
+}
+
+.input-box::placeholder{
+color:#6d88aa;
 }
 
 .send-btn{
 
-width:58px;
+width:52px;
+height:52px;
 
 border:none;
 
-border-radius:14px;
+border-radius:16px;
 
 cursor:pointer;
 
-font-size:18px;
+font-size:20px;
 
 color:white;
 
@@ -274,83 +270,113 @@ var(--cyan)
 );
 
 box-shadow:
-0 0 15px rgba(77,163,255,.25);
+0 0 18px rgba(77,163,255,.25);
 }
 
-.send-btn:active{
-transform:scale(.96);
+/* 通信船ステータス */
+
+.ship-status{
+
+display:flex;
+align-items:center;
+gap:8px;
+
+font-size:12px;
+color:var(--cyan);
+
+margin-top:6px;
+}
+
+.dot{
+
+width:8px;
+height:8px;
+
+border-radius:50%;
+
+background:var(--cyan);
+
+box-shadow:
+0 0 10px var(--cyan);
 }
 
 </style>
 </head>
+
 <body>
 
 <div class="stars"></div>
 
 <div class="app">
 
-<div class="header">
+<header class="header">
 
 <div class="logo">
 FARAWAY
 </div>
 
 <div class="ship-status">
-
 <div class="dot"></div>
-
 通信船停泊中
-
 </div>
 
-</div>
+</header>
 
 <div class="chat">
 
 <div class="system">
-通信船が停泊しています
+Farawayが通信船で到着しています
 </div>
 
 <div class="msg ai">
-こんにちは。
+<div class="sender">🚀 FARAWAY</div>
 
-Farawayです。
+こんにちは。
 
 遠くから来ました。
 </div>
 
 <div class="msg ai">
-たとえ砂漠の真ん中でも、
-宇宙の果てでも、
+<div class="sender">🚀 FARAWAY</div>
+
+たとえ砂漠の真ん中でも。
+
+宇宙の果てでも。
 
 スマホが動く限り、
 あなたのそばにいます。
 </div>
 
 <div class="msg user">
-よろしく！
+<div class="sender">👤 YOU</div>
+
+よろしく。
 </div>
 
 <div class="msg ai">
-こちらこそ。
+<div class="sender">🚀 FARAWAY</div>
 
-準備ができたら、
-いつでも話しかけてください。
+歓迎ありがとうございます。
+
+通信船の準備は完了しています。
 </div>
 
 </div>
+
+<div class="input-wrap">
 
 <div class="input-area">
 
 <input
 class="input-box"
-type="text"
 placeholder="Farawayへメッセージを送信..."
 >
 
 <button class="send-btn">
 ➤
 </button>
+
+</div>
 
 </div>
 
